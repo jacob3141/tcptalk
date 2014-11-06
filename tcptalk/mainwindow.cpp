@@ -35,7 +35,26 @@ void MainWindow::disconnected()
 
 void MainWindow::readyRead()
 {
-    ui->plainTextEditResponse->appendPlainText(QString::fromUtf8(_tcpSocket.readAll()));
+    QString response = QString::fromUtf8(_tcpSocket.readAll());
+
+    if(!ui->lineEditIgnore->text().isEmpty()) {
+        if(response.contains(ui->lineEditIgnore->text())) {
+            return;
+        }
+    }
+
+    if(ui->checkBoxCutOffLineEndings->isChecked()) {
+        if(response.endsWith("\n")) {
+            response.chop(1);
+        }
+
+        if(response.endsWith("\r")) {
+            response.chop(1);
+        }
+    }
+
+    ui->plainTextEditResponse->appendPlainText(response);
+    ui->plainTextEditResponse->ensureCursorVisible();
 }
 
 void MainWindow::on_lineEditServer_returnPressed()
@@ -59,5 +78,34 @@ void MainWindow::on_lineEditServer_returnPressed()
 
 void MainWindow::on_lineEditRequest_returnPressed()
 {
-    _tcpSocket.write((ui->lineEditRequest->text() + "\n").toUtf8());
+    QString lineEnding = "";
+    switch (ui->comboBoxLineEndings->currentIndex()) {
+    case 0:
+        lineEnding = "\n";
+        break;
+    case 1:
+        lineEnding = "\r\n";
+        break;
+    case 2:
+        lineEnding = "\r";
+        break;
+    }
+
+    _tcpSocket.write((ui->lineEditRequest->text() + lineEnding).toUtf8());
+
+    if(ui->checkBoxDeleteSentLine->isChecked()) {
+        ui->lineEditRequest->clear();
+    }
+}
+
+void MainWindow::on_pushButtonEncode_clicked()
+{
+    QByteArray encoded = ui->plainTextEditPlain->toPlainText().toUtf8().toBase64();
+    ui->plainTextEditEncoded->setPlainText(QString::fromUtf8(encoded));
+}
+
+void MainWindow::on_pushButtonDecode_clicked()
+{
+    QByteArray decoded = QByteArray::fromBase64(ui->plainTextEditEncoded->toPlainText().toUtf8());
+    ui->plainTextEditPlain->setPlainText(QString::fromUtf8(decoded));
 }

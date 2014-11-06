@@ -24,6 +24,9 @@ protected slots:
     void on_lineEditServer_returnPressed();
     void on_lineEditRequest_returnPressed();
 
+    void on_pushButtonEncode_clicked();
+    void on_pushButtonDecode_clicked();
+
 private:
     Ui::MainWindow *ui;
     QTcpSocket _tcpSocket;
