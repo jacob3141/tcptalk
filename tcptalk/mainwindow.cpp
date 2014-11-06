@@ -15,6 +15,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
 MainWindow::~MainWindow()
 {
+    _tcpSocket.disconnectFromHost();
     delete ui;
 }
 
@@ -51,6 +52,8 @@ void MainWindow::on_lineEditServer_returnPressed()
         }
     }
 
+    _tcpSocket.abort();
+    _tcpSocket.disconnectFromHost();
     _tcpSocket.connectToHost(server, port);
 }
 
